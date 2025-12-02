@@ -24,6 +24,10 @@ spring:
 server:
   port: 8080
 
+logging:
+  file:
+    name: warehouse_logging1.log
+
 ---
 spring:
   config:
@@ -35,3 +39,7 @@ spring:
 
 server:
   port: 8081
+
+logging:
+  file:
+    name: warehouse_logging2.log
