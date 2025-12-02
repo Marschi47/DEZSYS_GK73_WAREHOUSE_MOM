@@ -1,33 +1,38 @@
 package com.example.demo;
 
-import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List; // <--- WICHTIG: Import nicht vergessen
 
 @Component
+@Profile("consumer")
 public class MessageConsumer {
 
-    // In-memory storage for the "Central" reporting
-    private final java.util.List<WarehouseData> warehouseStorage = new java.util.ArrayList<>();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @KafkaListener(topics = "warehouse-events", groupId = "myGroup")
+    // Die Liste ist "private", von außen kommt niemand ran
+    private final List<WarehouseData> warehouseDatabase = new ArrayList<>();
+
+    @KafkaListener(topics = "quickstart-events", groupId = "central-group")
     public void processMessage(String content) {
         try {
-            // Convert JSON back to Object
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            WarehouseData data = mapper.readValue(content, WarehouseData.class);
-
-            System.out.println("Central received: " + data);
-
-            // Add to storage (In a real app, this would be a Database)
-            warehouseStorage.add(data);
-
+            WarehouseData data = objectMapper.readValue(content, WarehouseData.class);
+            System.out.println("Zentrale hat empfangen: " + data);
+            warehouseDatabase.add(data);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Getter to access the data for the REST report
-    public java.util.List<WarehouseData> getStoredData() {
-        return warehouseStorage;
+    // --- HIER IST DAS FEHLENDE STÜCK ---
+    // Diese Methode hat gefehlt. Sie erlaubt dem Controller,
+    // die private Liste zu lesen.
+    public List<WarehouseData> getAllData() {
+        return warehouseDatabase;
     }
+    // -----------------------------------
 }
