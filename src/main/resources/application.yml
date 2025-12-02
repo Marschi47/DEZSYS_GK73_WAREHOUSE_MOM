@@ -3,5 +3,35 @@ spring:
     name: "demo"
   kafka:
     bootstrap-servers: "localhost:9092"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
-      group-id: "myGroup"
+      # Standard-Einstellung (falls kein Profil greift)
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+---
+spring:
+  config:
+    activate:
+      on-profile: producer
+  kafka:
+    consumer:
+      group-id: "producer-feedback-group"
+
+server:
+  port: 8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: consumer
+  kafka:
+    consumer:
+      group-id: "central-group"
+
+server:
+  port: 8081
